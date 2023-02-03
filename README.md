@@ -1,7 +1,7 @@
 # Repository name
 gateone 계정 사용에 대한 상태를 확인하는 화면 (등록,반환 등의 이벤트 포함)
 
-# Use Manual
+# User Manual
 ```
 https://onepredict.atlassian.net/wiki/spaces/FST/pages/1387888848/Manual+2023-02-03
 ```
