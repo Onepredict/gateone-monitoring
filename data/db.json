@@ -1,0 +1,59 @@
+{
+  "reserved": [
+    {
+      "id": 1,
+      "account": "op1",
+      "user": "박기범",
+      "server": [
+        "server1",
+        "server3"
+      ],
+      "ipc": [
+        "lam13",
+        "lam14",
+        "lam15"
+      ]
+    },
+    {
+      "id": 2,
+      "account": "",
+      "user": "",
+      "server": [],
+      "pic": []
+    },
+    {
+      "id": 3,
+      "account": "",
+      "user": "",
+      "server": [],
+      "pic": []
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "value": "황태완",
+      "label": "황태완"
+    },
+    {
+      "id": 2,
+      "value": "박기범",
+      "label": "박기범"
+    },
+    {
+      "id": 3,
+      "value": "김선진",
+      "label": "김선진"
+    },
+    {
+      "id": 4,
+      "value": "김세원",
+      "label": "김세원"
+    },
+    {
+      "id": 5,
+      "value": "김효석",
+      "label": "김효석"
+    }
+  ]
+}
