@@ -1,0 +1,237 @@
+body {
+  margin: 0 !important;
+}
+
+.gateone {
+  .user-settings {
+    &:hover {
+      color: gray;
+    }
+  }
+
+  .user-icon {
+    &:hover {
+      color: gray;
+    }
+  }
+
+  .ipcGroup {
+    .ant-checkbox-wrapper {
+      font-size: 20px;
+    }
+
+    .ant-checkbox-group {
+      gap: 15px;
+    }
+  }
+
+  .serverGroup {
+    .ant-checkbox-wrapper {
+      font-size: 20px;
+    }
+
+    .ant-checkbox-group {
+      gap: 15px;
+    }
+  }
+
+  .ant-spin-container {
+    opacity: 1 !important;
+  }
+  .ant-spin-dot {
+    display: none !important;
+  }
+
+  .ant-spin-blur::after {
+    opacity: 0 !important;
+  }
+
+  .ant-descriptions-view {
+    border: 2px solid black !important;
+    background: white;
+  }
+
+  .ant-descriptions-row {
+    border-bottom: 2px solid black !important;
+  }
+
+  .ant-descriptions-row {
+    th {
+      border-inline-end: 2px solid black !important;
+      padding: 10px !important;
+    }
+    td {
+      border-inline-end: 2px solid black !important;
+      padding: 10px !important;
+    }
+  }
+
+  .content {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    grid-gap: 20px;
+    gap: 20px;
+    background: white;
+    .content-box.side {
+      width: 40%;
+      background: whitesmoke;
+      border-radius: 10px;
+      padding: 40px;
+    }
+    .content-box {
+      width: 60%;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+      grid-gap: 30px;
+      .content-comp {
+        height: 33%;
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 1px 1px 5px rgb(0 0 0 / 10%);
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        overflow: hidden;
+        gap: 25px;
+        .new-data {
+          border: 4px black dotted;
+          border-radius: 10px;
+          &:hover {
+            background: rgb(112, 112, 112, 0.3);
+          }
+          &:hover .new-icon {
+            font-size: 40px;
+          }
+        }
+        .content-data {
+          position: relative;
+          font-size: 30px;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          width: 100%;
+          max-height: 400px;
+          .reserve {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            background: gray;
+            opacity: 0.7;
+            border-radius: 10px;
+            border: 4px solid gray;
+            left: 0;
+            top: 0;
+            div {
+              width: 200px;
+              height: 70px;
+              display: flex;
+              flex-direction: row;
+              justify-content: center;
+              align-items: center;
+              background: white;
+              font-size: 40px;
+              font-weight: 600;
+              border-radius: 20px;
+            }
+          }
+        }
+        .ant-checkbox-inner {
+          transform: scale(1.5);
+        }
+        .ant-checkbox-wrapper {
+          span:last-child {
+            font-size: 25px;
+            margin-left: 5px;
+          }
+        }
+      }
+    }
+  }
+
+  .ant-descriptions-view {
+    height: 100%;
+    table {
+      height: 100%;
+    }
+  }
+
+  .description-large {
+    .ant-skeleton-input {
+      min-width: 208px !important;
+      width: 208px !important;
+    }
+  }
+
+  .description-small {
+    .ant-skeleton-input {
+      min-width: 50px !important;
+      width: 50px !important;
+    }
+  }
+
+  .ant-layout-sider {
+    border-right: 1px solid black !important;
+    background: #285aff;
+  }
+
+  .ant-layout-sider-trigger {
+    border-right: 1px solid black !important;
+    background: #285aff;
+  }
+
+  .ant-menu {
+    background: #285aff;
+    color: white;
+  }
+
+  .ant-menu-item:hover {
+    background: white !important;
+    color: black !important;
+  }
+
+  .ant-layout-sider-trigger {
+    background: #285aff !important;
+    span {
+      color: white;
+    }
+  }
+
+  .bg-span-box {
+    width: 100%;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    position: absolute;
+    display: none;
+    z-index: 99;
+    .bg-spin.ant-spin {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      background: rgb(112, 112, 112, 0.3);
+      .ant-spin-dot {
+        display: block !important;
+      }
+      .ant-spin-text {
+        margin-top: 5px;
+      }
+    }
+  }
+}
+
+.ant-modal {
+  top: 40%;
+}

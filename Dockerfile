@@ -4,4 +4,4 @@ COPY package.json package-lock.json ./
 COPY . .
 RUN npm ci
 EXPOSE 5000
-CMD ["npm","start"]
+CMD ["npm","run", "dev"]
