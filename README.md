@@ -26,12 +26,12 @@ https://onepredict.atlassian.net/wiki/spaces/FST/pages/1387888848/Manual+2023-02
 
 1. gateone 화면 실행
 # docker build -t gateone-monitoring ./
-# docker run -d --name gateone-monitoring -p 5000:3000 gateone-monitoring
+# docker run -d --restart always --name gateone-monitoring -p 5000:3000 gateone-monitoring
 
 2. json-server 실행
 # cd data
 # docker build -t common-json-server ./
-# docker run -d --name common-json-server -p 4000:3000 -v /home/backoffice/yoonyoung/data:/app/data common-json-server
+# docker run -d --restart always --name common-json-server -p 4000:3000 -v /home/backoffice/yoonyoung/data:/app/data common-json-server
 ```
 
 # Dockerize
@@ -39,8 +39,8 @@ https://onepredict.atlassian.net/wiki/spaces/FST/pages/1387888848/Manual+2023-02
 ```
 # docker save -o gateone-monitoring.tar gateone-monitoring
 # docker load -i gateone-monitoring.tar
-# docker run -d --name gateone-monitoring -p 5000:3000 gateone-monitoring
+# docker run -d --restart always --name gateone-monitoring -p 5000:3000 gateone-monitoring
 # docker save -o common-json-server.tar common-json-server
 # docker load -i common-json-server.tar
-# docker run -d --name common-json-server -p 4000:3000 -v /home/backoffice/yoonyoung/data:/app/data common-json-server
+# docker run -d --restart always --name common-json-server -p 4000:3000 -v /home/backoffice/yoonyoung/data:/app/data common-json-server
 ```
