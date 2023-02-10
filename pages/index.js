@@ -41,7 +41,7 @@ export default function Home() {
             <div className="content-comp">
               <Row gutter={[60]} style={{ width: '100%', padding: '0 40px' }}>
                 <Col span={4}>
-                  <Link key={'gateone'} href={'/gateone'} legacyBehavior>
+                  <Link key={'gateone'} href={'/gateone'} legacyBehavior passHref>
                     <div className="content-item" onClick={() => handleLink(true)}>
                       <Card title="GATE ONE" className="card" loading={false}>
                         <p>동시간 접속 관련</p>
@@ -53,7 +53,7 @@ export default function Home() {
                 </Col>
 
                 <Col span={4}>
-                  <Link key={'timesheet'} href={'http://timesheet.onepredict.com/'} legacyBehavior>
+                  <Link key={'timesheet'} href={'/timesheet'} legacyBehavior passHref>
                     <div className="content-item" onClick={() => handleLink(true)}>
                       <Card title="TIME SHEET" className="card" loading={false}>
                         <p>엑셀 입력 및 더존 상신용</p>

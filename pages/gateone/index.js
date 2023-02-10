@@ -190,32 +190,32 @@ function App() {
 
   const serverItems = [
     {
-      label: 'SERVER1',
+      label: 'CELL3-1F(G)',
       value: 'server1',
       disabled: servers.server1,
     },
     {
-      label: 'SERVER2',
+      label: 'CELL3-2F(G)',
       value: 'server2',
       disabled: servers.server2,
     },
     {
-      label: 'SERVER3',
+      label: 'CELL4-1F(G)',
       value: 'server3',
       disabled: servers.server3,
     },
     {
-      label: 'SERVER4',
+      label: 'CELL3-1F(C)',
       value: 'server4',
       disabled: servers.server4,
     },
     {
-      label: 'SERVER5',
+      label: 'CELL3-2F(C)',
       value: 'server5',
       disabled: servers.server5,
     },
     {
-      label: 'SERVER6',
+      label: 'CELL3-4F(C)',
       value: 'server6',
       disabled: servers.server6,
     },
@@ -442,7 +442,7 @@ function App() {
       <MonitorOutlined />
     ),
     getItem(
-      <Link key={'timesheet'} href={'http://timesheet.onepredict.com/'} legacyBehavior>
+      <Link key={'timesheet'} href={'/timesheet'} legacyBehavior>
         <a onClick={() => handleLink(true, 'timesheet')}>{'TIME SHEET'}</a>
       </Link>,
       'TIME SHEET',
@@ -597,9 +597,13 @@ function App() {
                                           <Col key={'server' + k} span={12}>
                                             <Tag
                                               color="#f50"
-                                              style={{ fontSize: '20px', padding: '5px', width: '100%', textAlign: 'center' }}
+                                              style={{ fontSize: '13px', padding: '5px', width: '100%', textAlign: 'center' }}
                                             >
-                                              {v.toUpperCase()}
+                                              {serverItems.map((k) => {
+                                                if (k.value === v) {
+                                                  return k.label
+                                                }
+                                              })}
                                             </Tag>
                                           </Col>
                                         )

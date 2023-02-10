@@ -150,7 +150,7 @@ body {
         }
         .ant-checkbox-wrapper {
           span:last-child {
-            font-size: 25px;
+            font-size: 22px;
             margin-left: 5px;
           }
         }
@@ -234,4 +234,14 @@ body {
 
 .ant-modal {
   top: 40%;
+}
+
+.iframe-box {
+  width: 100%;
+  height: 100%;
+  background: white;
+  padding: 0 !important;
+}
+iframe {
+  padding: 20px;
 }
