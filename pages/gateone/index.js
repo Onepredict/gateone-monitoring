@@ -215,7 +215,7 @@ function App() {
       disabled: servers.server5,
     },
     {
-      label: 'CELL3-4F(C)',
+      label: 'CELL4-2F(C)',
       value: 'server6',
       disabled: servers.server6,
     },
