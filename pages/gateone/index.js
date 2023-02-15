@@ -331,10 +331,10 @@ function App() {
       swalAlert('계정 정보를 확인해 주세요')
       return
     }
-    if (formData.server.length === 0) {
-      swalAlert('서버 정보를 확인해 주세요')
-      return
-    }
+    // if (formData.server.length === 0) {
+    //   swalAlert('서버 정보를 확인해 주세요')
+    //   return
+    // }
     swal({
       title: '계정을 사용하시겠습니까?',
       buttons: true,
