@@ -1,6 +1,7 @@
 import axios from 'axios'
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
+import useSWR from 'swr'
 import Image from 'next/image'
 import {
   Layout,
@@ -24,6 +25,7 @@ import { PlusOutlined, PlusCircleOutlined, FileExcelOutlined, HomeOutlined, Moni
 import swal from 'sweetalert'
 import { IP_ADDRESS } from './propoties'
 const { Content, Sider } = Layout
+
 const servers = {
   server1: false,
   server2: false,
@@ -48,146 +50,6 @@ const ops = {
 }
 
 function App() {
-  const [openModal, setOpenModal] = useState(false)
-  const [userName, setUserName] = useState()
-  const [closable, setClosable] = useState(false)
-  const [formData, setFormData] = useState({
-    id: '',
-    account: '',
-    user: '',
-    server: [],
-    ipc: [],
-  })
-
-  const [reserves, setReserves] = useState([])
-  const [isReserve, setIsReserve] = useState(false)
-
-  const [serverCheckedList, setServerCheckedList] = useState([])
-  const [ipcCheckedList, setIpcCheckedList] = useState([])
-
-  const [data, setData] = useState()
-  const [users, setUsers] = useState()
-
-  const [isMouseEvent, setIsMouseEvent] = useState()
-
-  const selectReserved = async () => {
-    await axios.get(IP_ADDRESS + '/reserved').then((response) => {
-      resetDisabled()
-      response.data.sort((a, b) => b['id'] - a['id'])
-      setData(response.data)
-    })
-  }
-
-  const insertReserve = async () => {
-    await axios.post(IP_ADDRESS + '/reserved', formData).then((response) => {
-      selectReserved()
-      resetReserved()
-    })
-  }
-
-  const returnReserved = async (id) => {
-    await axios.delete(IP_ADDRESS + '/reserved/' + id).then((response) => {
-      selectReserved()
-    })
-  }
-
-  const selectUsers = async () => {
-    await axios.get(IP_ADDRESS + '/users').then((response) => {
-      const result = response.data.sort((a, b) => {
-        return a['label'] < b['label'] ? -1 : a['label'] > b['label'] ? 1 : 0
-      })
-      setUsers(result)
-    })
-  }
-
-  const insertUser = async (formData) => {
-    await axios.post(IP_ADDRESS + '/users/', formData).then((response) => {
-      selectUsers()
-      setNewName('')
-    })
-  }
-
-  const resetReserved = () => {
-    setIsReserve(false)
-    setServerCheckedList([])
-    setIpcCheckedList([])
-    setAccountChecked(null)
-    setFormData({
-      id: '',
-      account: '',
-      user: userName,
-      server: [],
-      ipc: [],
-    })
-  }
-
-  useEffect(() => {}, [formData, isMouseEvent])
-
-  useEffect(() => {
-    const name = sessionStorage.getItem('user')
-    if (name) {
-      formData.user = name
-      setFormData(formData)
-      setUserName(name)
-    } else {
-      setOpenModal(true)
-    }
-    selectReserved()
-    selectUsers()
-  }, [])
-
-  const resetDisabled = () => {
-    for (let server in servers) {
-      servers[server] = false
-    }
-    for (let ipc in ipcs) {
-      ipcs[ipc] = false
-    }
-    for (let op in ops) {
-      ops[op] = false
-    }
-  }
-
-  const [maxId, setMaxId] = useState(0)
-
-  useEffect(() => {
-    data?.map((v, i) => {
-      reserves['reserve' + (i + 1)] = false
-      if (v.user !== '') {
-        reserves['reserve' + (i + 1)] = true
-        const account = v.account
-        ops[account] = true
-        const server = v.server
-        server.map((v, i) => {
-          return (servers[v] = true)
-        })
-        const ipc = v.ipc
-        ipc.map((v, i) => {
-          return (ipcs[v] = true)
-        })
-      }
-      return ''
-    })
-    data && data.length > 0 ? setMaxId(data[0]['id']) : setMaxId(0)
-  }, [data])
-
-  const handleModal = () => {
-    setOpenModal(true)
-    setClosable(true)
-  }
-
-  const closeModal = () => {
-    setOpenModal(false)
-    setClosable(false)
-  }
-
-  const handleUser = (value) => {
-    setOpenModal(false)
-    setUserName(value)
-    formData.user = value
-    sessionStorage.setItem('user', value)
-  }
-
   const serverItems = [
     {
       label: 'CELL3-1F(G)',
@@ -249,24 +111,181 @@ function App() {
     },
   ]
 
+  const [openModal, setOpenModal] = useState(false)
+  const [userName, setUserName] = useState()
+  const [closable, setClosable] = useState(false)
+  const [formData, setFormData] = useState({
+    id: '',
+    account: '',
+    user: '',
+    server: [],
+    ipc: [],
+  })
+
+  const [reserves, setReserves] = useState([])
+  const [isReserve, setIsReserve] = useState(false)
+
+  const [serverCheckedList, setServerCheckedList] = useState([])
+  const [ipcCheckedList, setIpcCheckedList] = useState([])
+
+  const [data, setData] = useState()
+  const [users, setUsers] = useState()
+  const [maxId, setMaxId] = useState(0)
+
+  const [isMouseEvent, setIsMouseEvent] = useState()
+  const [isCancel, setIsCancel] = useState(false)
+
   const [accountChecked, setAccountChecked] = useState(null)
 
-  const handleMouseOver = (e, value) => {
-    reserves['return' + (value + 1)] = true
-    handleMouseEvent(reserves, value)
+  const [collapsed, setCollapsed] = useState(true)
+
+  const [newName, setNewName] = useState('')
+  const inputRef = useRef(null)
+
+  const fetcher = async () =>
+    await fetch(IP_ADDRESS + '/reserved')
+      .then((response) => {
+        return response.json()
+      })
+      .catch((error) => {
+        swalAlert('데이터 조회에 실패했습니다.')
+      })
+  const { data: useData, mutate } = useSWR(IP_ADDRESS + '/reserved', fetcher, {
+    revalidateIfStale: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateOnFocus: true,
+    refreshInterval: 3000,
+  })
+
+  const insertReserve = async () => {
+    await axios
+      .post(IP_ADDRESS + '/reserved', formData)
+      .then((response) => {
+        mutate()
+        resetReserved()
+      })
+      .catch((error) => {
+        swalAlert('등록이 실패했습니다. 등록 현황을 확인해주세요.')
+        mutate()
+        resetReserved()
+      })
   }
 
-  const handleMouserLeave = (e, value) => {
-    delete reserves['return' + (value + 1)]
-    handleMouseEvent(reserves, '')
+  const deleteReserved = async (id) => {
+    await axios.delete(IP_ADDRESS + '/reserved/' + id).then((response) => {
+      mutate()
+    })
   }
 
-  function handleMouseEvent(reserves, value) {
-    setIsMouseEvent(value)
-    setReserves(reserves)
+  const getUsers = async () => {
+    await axios.get(IP_ADDRESS + '/users').then((response) => {
+      const result = response.data.sort((a, b) => {
+        return a['label'] < b['label'] ? -1 : a['label'] > b['label'] ? 1 : 0
+      })
+      setUsers(result)
+    })
   }
 
-  const addReserved = () => {
+  const insertUser = async (formData) => {
+    await axios.post(IP_ADDRESS + '/users/', formData).then((response) => {
+      getUsers()
+      setNewName('')
+    })
+  }
+
+  const resetReserved = () => {
+    setIsReserve(false)
+    setServerCheckedList([])
+    setIpcCheckedList([])
+    setAccountChecked(null)
+    setFormData({
+      id: '',
+      account: '',
+      user: userName,
+      server: [],
+      ipc: [],
+    })
+  }
+
+  useEffect(() => {
+    const name = sessionStorage.getItem('user')
+    if (name) {
+      formData.user = name
+      setFormData(formData)
+      setUserName(name)
+    } else {
+      setOpenModal(true)
+    }
+    mutate()
+    getUsers()
+  }, [])
+
+  useEffect(() => {
+    if (!useData) return
+    useData.sort((a, b) => b['id'] - a['id'])
+    setData(useData)
+  }, [useData])
+
+  const [state, setState] = useState(JSON.stringify(ops).concat(JSON.stringify(servers)).concat(JSON.stringify(ipcs)))
+
+  useEffect(() => {
+    if (!data) return
+    resetDisabled()
+    data.map((v, i) => {
+      reserves['reserve' + (i + 1)] = false
+      if (v.user !== '') {
+        reserves['reserve' + (i + 1)] = true
+        const account = v.account
+        ops[account] = true
+        const server = v.server
+        server.map((v, i) => {
+          return (servers[v] = true)
+        })
+        const ipc = v.ipc
+        ipc.map((v, i) => {
+          return (ipcs[v] = true)
+        })
+      }
+      return ''
+    })
+    setState(JSON.stringify(ops).concat(JSON.stringify(servers)).concat(JSON.stringify(ipcs)))
+    data.length > 0 ? setMaxId(data[0]['id']) : setMaxId(0)
+  }, [data])
+
+  useEffect(() => {}, [formData, isMouseEvent, state])
+
+  const resetDisabled = () => {
+    for (let server in servers) {
+      servers[server] = false
+    }
+    for (let ipc in ipcs) {
+      ipcs[ipc] = false
+    }
+    for (let op in ops) {
+      ops[op] = false
+    }
+  }
+
+  const handleOpenModal = () => {
+    setOpenModal(true)
+    setClosable(true)
+  }
+
+  const handleCloseModal = () => {
+    setOpenModal(false)
+    setClosable(false)
+  }
+
+  const handleUser = (value) => {
+    setOpenModal(false)
+    setUserName(value)
+    formData.user = value
+    setFormData(formData)
+    sessionStorage.setItem('user', value)
+  }
+
+  const handleAddReserved = () => {
     if (!checkSoldout()) {
       if (formData && formData.id === '') {
         formData.id = maxId + 1
@@ -274,27 +293,40 @@ function App() {
         setIsReserve(true)
       }
     } else {
-      swalAlert('사용가능한 계정 또는 서버가 없습니다.')
+      swalAlert('사용가능한 계정이 없습니다.')
     }
   }
 
-  const cancelReserve = () => {
+  const handleCancelReserve = () => {
     resetReserved()
     formData.id = ''
     setFormData(formData)
     setIsCancel(false)
   }
 
-  const [isCancel, setIsCancel] = useState(false)
-
-  const handleMouseOver2 = (e) => {
+  const handleAddAreaMouseOver = (e) => {
     e.preventDefault()
     setIsCancel(true)
   }
 
-  const handleMouseLeave2 = (e) => {
+  const handleAddAreaMouseLeave = (e) => {
     e.preventDefault()
     setIsCancel(false)
+  }
+
+  const handleReservedMouseOver = (e, value) => {
+    reserves['return' + (value + 1)] = true
+    handleMouseEvent(reserves, value)
+  }
+
+  const handleReservedMouserLeave = (e, value) => {
+    delete reserves['return' + (value + 1)]
+    handleMouseEvent(reserves, '')
+  }
+
+  const handleMouseEvent = (reserves, value) => {
+    setIsMouseEvent(value)
+    setReserves(reserves)
   }
 
   const handleUserAccount = (item) => {
@@ -331,10 +363,6 @@ function App() {
       swalAlert('계정 정보를 확인해 주세요')
       return
     }
-    // if (formData.server.length === 0) {
-    //   swalAlert('서버 정보를 확인해 주세요')
-    //   return
-    // }
     swal({
       title: '계정을 사용하시겠습니까?',
       buttons: true,
@@ -363,7 +391,7 @@ function App() {
           swal('반납이 완료됐습니다.', {
             icon: 'success',
           })
-          returnReserved(id)
+          deleteReserved(id)
         } else {
           swal('반납이 취소됐습니다.')
         }
@@ -371,7 +399,7 @@ function App() {
     }
   }
 
-  const handleSpin = () => {
+  const handleDirectReserve = () => {
     if (!isReserve) {
       swal({
         text: '신규 등록을 진행합니다.',
@@ -379,7 +407,7 @@ function App() {
         buttons: false,
         timer: 900,
       })
-      addReserved()
+      handleAddReserved()
     }
   }
 
@@ -393,37 +421,34 @@ function App() {
 
   const checkSoldout = () => {
     let opsSoldout = true
-    let serverSoldout = true
-    let ipcSoldout = true
     for (let op in ops) {
       if (ops[op] === false) opsSoldout = false
     }
     if (opsSoldout) return opsSoldout
-    for (let server in servers) {
-      if (servers[server] === false) serverSoldout = false
-    }
-    if (serverSoldout) return serverSoldout
-    for (let ipc in ipcs) {
-      if (ipcs[ipc] === false) ipcSoldout = false
-    }
-    if (ipcSoldout) return ipcSoldout
     return false
   }
 
-  const [newName, setNewName] = useState('')
-  const inputRef = useRef(null)
-  const onNameChange = (event) => {
+  const handleUserName = (event) => {
     setNewName(event.target.value)
   }
-  const addItem = (e) => {
+
+  const addUser = (e) => {
     e.preventDefault()
     setUsers([...users, { value: newName, label: newName }])
     insertUser({ value: newName, label: newName })
   }
 
-  const [collapsed, setCollapsed] = useState(true)
   const handleCollapesd = (value) => {
     setCollapsed(value)
+  }
+
+  const getItem = (label, key, icon, children) => {
+    return {
+      key,
+      icon,
+      children,
+      label,
+    }
   }
 
   const items = [
@@ -449,15 +474,6 @@ function App() {
       <FileExcelOutlined />
     ),
   ]
-
-  function getItem(label, key, icon, children) {
-    return {
-      key,
-      icon,
-      children,
-      label,
-    }
-  }
 
   const [selectMenu, setSelectMenu] = useState('GATE ONE')
 
@@ -517,14 +533,14 @@ function App() {
               >
                 <Row gutter={[24, 32]} style={{ width: '100%' }}>
                   <Col span={8}>
-                    <div className="content-data new-data" onClick={addReserved}>
+                    <div className="content-data new-data" onClick={handleAddReserved}>
                       <PlusCircleOutlined style={{ color: 'black' }} className="new-icon" />
                     </div>
                   </Col>
                   <>
                     {isReserve || (formData && formData.id !== '' && formData.account === '') ? (
                       <Col span={8}>
-                        <div className="content-data" onMouseOver={handleMouseOver2} onMouseLeave={handleMouseLeave2} hand>
+                        <div className="content-data" onMouseOver={handleAddAreaMouseOver} onMouseLeave={handleAddAreaMouseLeave}>
                           <Descriptions
                             bordered
                             style={{ height: '100%' }}
@@ -553,7 +569,7 @@ function App() {
                             </Descriptions.Item>
                           </Descriptions>
                           {isCancel ? (
-                            <div className="reserve" onClick={cancelReserve}>
+                            <div className="reserve" onClick={handleCancelReserve}>
                               <div style={{ background: 'black', color: 'white' }}>취소</div>
                             </div>
                           ) : null}
@@ -566,8 +582,8 @@ function App() {
                             <Col key={i} span={8}>
                               <div
                                 className="content-data"
-                                onMouseOver={(event) => handleMouseOver(event, i)}
-                                onMouseLeave={(event) => handleMouserLeave(event, i)}
+                                onMouseOver={(event) => handleReservedMouseOver(event, i)}
+                                onMouseLeave={(event) => handleReservedMouserLeave(event, i)}
                                 onClick={(event) => handleReserve(event, i, data[i]['id'])}
                               >
                                 <Descriptions
@@ -644,13 +660,13 @@ function App() {
 
             <div className="content-box side">
               <div style={{ fontSize: '20px' }}>
-                <span className="user-settings" onClick={handleModal} style={{ fontSize: '40px', fontWeight: 600 }}>
+                <span className="user-settings" onClick={handleOpenModal} style={{ fontSize: '40px', fontWeight: 600 }}>
                   {userName}
                 </span>
                 님 안녕하세요.
               </div>
               <div className="content-comp" style={{ background: 'lightblue' }}>
-                <Spin spinning={!isReserve} onClick={handleSpin}>
+                <Spin spinning={!isReserve} onClick={handleDirectReserve}>
                   <div className="content-item">
                     <div style={{ marginBottom: '15px' }}>
                       <span style={{ fontSize: '20px', fontWeight: '600' }}>계정 선택</span>
@@ -670,7 +686,7 @@ function App() {
                 </Spin>
               </div>
               <div className="content-comp" style={{ background: 'coral' }}>
-                <Spin spinning={!isReserve} onClick={handleSpin}>
+                <Spin spinning={!isReserve} onClick={handleDirectReserve}>
                   <div className="content-item">
                     <div style={{ marginBottom: '15px' }}>
                       <span style={{ fontSize: '20px', fontWeight: '600' }}>서버 선택</span>
@@ -692,7 +708,7 @@ function App() {
                 </Spin>
               </div>
               <div className="content-comp" style={{ background: '#FFB75C' }}>
-                <Spin spinning={!isReserve} onClick={handleSpin}>
+                <Spin spinning={!isReserve} onClick={handleDirectReserve}>
                   <div className="content-item">
                     <div style={{ marginBottom: '15px' }}>
                       <span style={{ fontSize: '20px', fontWeight: '600' }}>IPC 선택</span>
@@ -713,7 +729,7 @@ function App() {
                   </div>
                 </Spin>
               </div>
-              <Spin spinning={!isReserve} onClick={handleSpin}>
+              <Spin spinning={!isReserve} onClick={handleDirectReserve}>
                 <Button
                   size="large"
                   type="primary"
@@ -732,7 +748,7 @@ function App() {
           </div>
         </Content>
 
-        <Modal open={openModal} footer={null} onCancel={closeModal} closable={closable} maskClosable={false} width={400}>
+        <Modal open={openModal} footer={null} onCancel={handleCloseModal} closable={closable} maskClosable={false} width={400}>
           <div>사용자 선택</div>
           <Select
             showSearch
@@ -757,8 +773,8 @@ function App() {
                     padding: '0 8px 4px',
                   }}
                 >
-                  <Input placeholder="Please enter item" ref={inputRef} value={newName} onChange={onNameChange} />
-                  <Button type="text" icon={<PlusOutlined />} onClick={addItem}>
+                  <Input placeholder="Please enter item" ref={inputRef} value={newName} onChange={handleUserName} />
+                  <Button type="text" icon={<PlusOutlined />} onClick={addUser}>
                     Add item
                   </Button>
                 </Space>
